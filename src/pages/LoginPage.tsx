@@ -112,7 +112,10 @@ export const LoginPage = () => {
               <strong>Doctor:</strong> dr.smith@hospital.com
             </span>
             <span className="block">
-              <strong>Patient:</strong> michael.brown@example.com
+              <strong>Patient 1:</strong> michael.brown@example.com
+            </span>
+            <span className="block">
+              <strong>Patient 2:</strong> sarah.jones@example.com
             </span>
             <span className="block text-xs italic mt-1">
               (any password will work for demo)

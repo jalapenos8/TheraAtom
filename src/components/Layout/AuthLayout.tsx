@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { ChatBot } from '../ChatBot/ChatBot';
@@ -11,7 +11,8 @@ import {
   HeartIcon,
   ArrowRightOnRectangleIcon,
   Bars3Icon,
-  XMarkIcon
+  XMarkIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
 
 export const AuthLayout = () => {
@@ -20,13 +21,78 @@ export const AuthLayout = () => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [hasNewOffer, setHasNewOffer] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const isDoctor = currentUser?.role === 'doctor';
   const isPatient = currentUser?.role === 'patient';
 
+  // Check for pending CT scan offers
+  useEffect(() => {
+    if (currentUser && isPatient) {
+      const checkForOffers = () => {
+        const offerData = localStorage.getItem('appointmentOffer');
+        if (offerData) {
+          try {
+            const offer = JSON.parse(offerData);
+            // Show notification if the offer is not for this user and hasn't been accepted or declined
+            if (offer && offer.canceledBy !== currentUser.id) {
+              
+              // Check if user has declined or accepted this offer
+              const userMessages = localStorage.getItem(`messages_${currentUser.id}`);
+              if (userMessages) {
+                const messages = JSON.parse(userMessages);
+                const hasDeclinedOffer = messages.some((msg: any) => 
+                  msg.isSystemMessage && 
+                  msg.content.includes('CT scan spot available') && 
+                  msg.content.includes('You declined this offer')
+                );
+                
+                // Check if this user has already accepted this offer
+                const hasAcceptedOffer = offer.acceptedBy === currentUser.id;
+                
+                setHasNewOffer(!hasDeclinedOffer && !hasAcceptedOffer);
+              } else {
+                setHasNewOffer(true);
+              }
+            } else {
+              setHasNewOffer(false);
+            }
+          } catch (error) {
+            console.error('Error parsing appointment offer:', error);
+            setHasNewOffer(false);
+          }
+        } else {
+          setHasNewOffer(false);
+        }
+      };
+      
+      checkForOffers();
+    }
+  }, [currentUser, isPatient]);
+
   const handleLogout = () => {
     logout();
     navigate('/');
+  };
+
+  const handleResetData = () => {
+    setShowResetConfirm(true);
+  };
+
+  const confirmReset = () => {
+    // Clear all application data from localStorage
+    if (currentUser) {
+      localStorage.removeItem(`appointments_1`);
+      localStorage.removeItem(`messages_1`);
+      localStorage.removeItem(`appointments_2`);
+      localStorage.removeItem(`messages_2`);
+    }
+    localStorage.removeItem('appointmentOffer');
+    
+    setShowResetConfirm(false);
+    // Refresh the page to reload initial data
+    window.location.reload();
   };
 
   // Redirect to login if not authenticated
@@ -59,7 +125,8 @@ export const AuthLayout = () => {
         to: '/messages',
         icon: <BellIcon className="w-6 h-6" />,
         label: 'Messages',
-        matchPaths: ['/messages']
+        matchPaths: ['/messages'],
+        badge: hasNewOffer ? '1' : null
       },
       {
         to: '/mental-aid',
@@ -96,6 +163,32 @@ export const AuthLayout = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {/* Reset Confirmation Modal */}
+      {showResetConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-lg">
+            <h3 className="text-xl font-bold mb-2">Reset Application Data</h3>
+            <p className="mb-4">
+              Are you sure you want to reset all application data? This will clear all appointments, messages and offers.
+            </p>
+            <div className="flex space-x-3 justify-end">
+              <button
+                onClick={() => setShowResetConfirm(false)}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmReset}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              >
+                Reset Data
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="bg-primary text-white shadow-md">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
@@ -109,6 +202,15 @@ export const AuthLayout = () => {
                 {currentUser?.name} ({currentUser?.role})
               </span>
             </div>
+
+            <button 
+              onClick={handleResetData}
+              className="p-2 rounded-full hover:bg-primary/80"
+              aria-label="Reset Data"
+              title="Reset Application Data"
+            >
+              <TrashIcon className="w-6 h-6" />
+            </button>
             
             <button 
               onClick={handleLogout}
@@ -157,6 +259,11 @@ export const AuthLayout = () => {
                   >
                     {link.icon}
                     <span className="ml-3">{link.label}</span>
+                    {link.badge && (
+                      <span className="ml-auto bg-accent text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                        {link.badge}
+                      </span>
+                    )}
                   </Link>
                 </li>
               ))}
