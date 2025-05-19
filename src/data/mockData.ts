@@ -44,12 +44,12 @@ export const mockPatients: Patient[] = [
   },
   {
     id: '2',
-    email: 'sarah.jones@example.com',
-    name: 'Sarah Jones',
+    email: 'jon.jones@example.com',
+    name: 'Jon Jones',
     role: 'patient',
     doctorId: '1',
     allergies: ['Sulfa drugs'],
-    diagnoses: ['Breast Cancer Stage I'],
+    diagnoses: ['Adenocarcinoma , Gleason score 3+4'],
     specialNeeds: [],
     medications: [
       {
@@ -196,8 +196,8 @@ export const mockAppointments: Appointment[] = [
     id: '5',
     patientId: '2',
     doctorId: '1',
-    title: 'Chemotherapy Session',
-    type: 'chemotherapy',
+    title: 'Conventional External Beam Radiotherapy',
+    type: 'radiation_therapy',
     date: getDate(7),
     time: '13:00',
     duration: 180,
@@ -305,7 +305,7 @@ export const mockMessages: Message[] = [
     id: '3',
     senderId: 'system',
     receiverId: '2',
-    content: 'Your chemotherapy session has been scheduled for next week.',
+    content: 'Your radiotherapy session has been scheduled for next week.',
     timestamp: getDate(-1) + 'T09:45:00',
     isRead: false,
     isSystemMessage: true
