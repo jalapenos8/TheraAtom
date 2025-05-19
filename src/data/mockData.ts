@@ -1,5 +1,4 @@
-import type { User, Patient, Doctor, Appointment, TestResult, Message, Medication } from '../types';
-import { v4 as uuidv4 } from 'uuid';
+import type { User, Patient, Doctor, Appointment, TestResult, Message } from '../types';
 
 // Doctors
 export const mockDoctors: Doctor[] = [

@@ -31,7 +31,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string): Promise<User> => {
+  const login = async (email: string, _password: string): Promise<User> => {
     // In a real app, this would be an API call
     return new Promise((resolve, reject) => {
       setTimeout(() => {

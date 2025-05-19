@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { mockAppointments, mockMessages } from '../../data/mockData';
-import type { Appointment, AppointmentType, AppointmentStatus } from '../../types';
+import { mockAppointments } from '../../data/mockData';
+import type { Appointment, AppointmentStatus } from '../../types';
 
 const AppointmentsPage = () => {
   const { currentUser } = useAuth();
@@ -80,15 +80,13 @@ const AppointmentsPage = () => {
       const offeredAppointment = offer.appointment;
       
       if (offeredAppointment && offer.canceledBy !== currentUser.id) {
-        // Add the new appointment without cancelling existing CT scans
+        // Add the new appointment without modifying existing appointments
         const newAppointment: Appointment = {
           ...offeredAppointment,
           patientId: currentUser.id,
           id: 'new-' + offeredAppointment.id,
           status: 'scheduled' as AppointmentStatus
         };
-        
-        // Simply add the new appointment to the existing ones
         const finalAppointments = [...appointments, newAppointment];
         setAppointments(finalAppointments);
         
@@ -105,15 +103,17 @@ const AppointmentsPage = () => {
     }
   };
 
-  // Check URL parameters for appointment actions
+  // Check URL parameters for appointment actions after appointments are loaded
   useEffect(() => {
-    const queryParams = new URLSearchParams(window.location.search);
-    const action = queryParams.get('action');
-    
-    if (action === 'acceptOffer') {
-      acceptOfferedAppointment();
+    if (!loading && currentUser) {
+      const queryParams = new URLSearchParams(window.location.search);
+      const action = queryParams.get('action');
+
+      if (action === 'acceptOffer') {
+        acceptOfferedAppointment();
+      }
     }
-  }, [currentUser]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentUser, loading]);
 
   if (loading) {
     return <div className="flex justify-center items-center py-10">Loading...</div>;

@@ -1,9 +1,4 @@
-import React from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-
 const MentalAidPage = () => {
-  const { currentUser } = useAuth();
-
   const resources = [
     {
       title: 'Cancer Support Hotline',
